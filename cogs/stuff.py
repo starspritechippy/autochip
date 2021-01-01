@@ -128,10 +128,11 @@ class Stuff(commands.Cog):
         """turn an emoji or image into ascii art
         emoji have priority"""
         if not emoji:
-            if not ctx.message.attacments:
+            if not ctx.message.attachments:
                 return await ctx.send("```\n```")
-            url = str(ctx.attachments[0].url)
-        url = str(emoji.url)
+            url = str(ctx.message.attachments[0].url)
+        else:
+            url = str(emoji.url)
         ascii_art = image_to_ascii(await get_bytes(self.bot, url))
         await ctx.send(f"```{ascii_art}```")
 
