@@ -4,7 +4,7 @@ import os
 import traceback
 import aiohttp
 
-bot = commands.Bot(command_prefix="yoo ")
+bot = commands.Bot(command_prefix="ok ")
 bot.session = aiohttp.ClientSession()
 
 for cog in os.listdir("cogs"):
