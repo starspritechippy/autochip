@@ -5,6 +5,16 @@ import discord
 from discord.ext import commands
 
 
+def tiny_text(character: str):
+    """replaces text with its subscript version"""
+    regtext = "abcdefghijklmnopqrstuvwxyz"
+    superscript = "ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏˡᵐⁿᵒᵖᵠʳˢᵗᵘᵛʷˣʸᶻ"
+    if character in regtext:
+        return superscript[regtext.find(character)]
+    else:
+        return character
+
+
 async def try_delete_message(message: discord.Message):
     try:
         await message.delete()
@@ -101,6 +111,15 @@ class Stuff(commands.Cog):
                 bchoice = "rock"
 
         await ctx.send(f"you chose {choice}, i chose {bchoice}. {outcome}")
+
+    @commands.command()
+    async def whisper(self, ctx, *, text):
+        """whisper text"""
+        textmap = map(tiny_text, list(text.lower()))
+        whisper_text = ("".join(list(textmap))).rstrip(".?!")
+        whisper_text += "..."
+        await try_delete_message(ctx.message)
+        await ctx.send(whisper_text)
 
 
 def setup(bot):
