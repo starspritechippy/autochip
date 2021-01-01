@@ -30,8 +30,8 @@ class Stuff(commands.Cog):
 
     @commands.command()
     async def countdown(self, ctx, number: int = 3):
-        """do a countdown from the number to zero. due to not
-        wanting to make discord's api angry, let's keep the number below 10 okay"""
+        """do a countdown from the number to zero.
+        due to not wanting to make discord's api angry, let's keep the number below 10 okay"""
         if number > 10:
             return await ctx.send("what did i say >:(")
         nums = list(range(number))
@@ -57,7 +57,7 @@ class Stuff(commands.Cog):
 
     @commands.command()
     async def botsend(self, ctx, *, text: str):
-        """everyone known bots are superior, with this you can become one too :)"""
+        """become a superior lifeform :)"""
         try:
             webhooks = await ctx.channel.webhooks()
             if not webhooks:
@@ -114,7 +114,7 @@ class Stuff(commands.Cog):
 
     @commands.command()
     async def whisper(self, ctx, *, text):
-        """whisper text"""
+        """turn text into subscript making it freaking tiny"""
         textmap = map(tiny_text, list(text.lower()))
         whisper_text = ("".join(list(textmap))).rstrip(".?!")
         whisper_text += "..."
