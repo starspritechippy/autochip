@@ -2,8 +2,10 @@ from discord.ext import commands
 from config import token
 import os
 import traceback
+import aiohttp
 
-bot = commands.Bot(command_prefix="ok ")
+bot = commands.Bot(command_prefix="yoo ")
+bot.session = aiohttp.ClientSession()
 
 for cog in os.listdir("cogs"):
     if cog.endswith(".py"):

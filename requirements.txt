@@ -1,2 +1,4 @@
-pillow
-discord.py
+pillow~=8.0.1
+aiohttp~=3.6.3
+discord.py~=1.5.1
+jishaku~=1.20.0.220

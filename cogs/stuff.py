@@ -4,6 +4,8 @@ from asyncio import sleep
 import discord
 from discord.ext import commands
 
+from .utils.image import get_bytes, image_to_ascii
+
 
 def tiny_text(character: str):
     """replaces text with its subscript version"""
@@ -120,6 +122,18 @@ class Stuff(commands.Cog):
         whisper_text += "..."
         await try_delete_message(ctx.message)
         await ctx.send(whisper_text)
+
+    @commands.command(name="ascii", usage="<emoji or attached image>")
+    async def make_ascii(self, ctx, emoji: discord.PartialEmoji = None):
+        """turn an emoji or image into ascii art
+        emoji have priority"""
+        if not emoji:
+            if not ctx.message.attacments:
+                return await ctx.send("```\n```")
+            url = str(ctx.attachments[0].url)
+        url = str(emoji.url)
+        ascii_art = image_to_ascii(await get_bytes(self.bot, url))
+        await ctx.send(f"```{ascii_art}```")
 
 
 def setup(bot):
