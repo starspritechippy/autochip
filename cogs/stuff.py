@@ -149,7 +149,7 @@ class Stuff(commands.Cog):
                 print(new_temp, unit)
             elif temp[-1].lower() == "c":
                 new_temp, unit = (
-                    (int(temp[:-1].strip()) * (5/9)) + 32,
+                    (int(temp[:-1].strip()) * (9/5)) + 32,
                     "F"
                 )
                 print(new_temp, unit)
