@@ -3,6 +3,7 @@ from asyncio import sleep
 
 import discord
 from discord.ext import commands
+from googlesearch import search
 
 from .utils.image import get_bytes, image_to_ascii
 
@@ -157,6 +158,27 @@ class Stuff(commands.Cog):
             return await ctx.send("invalid temperature format, try <number>[c/f], for example 35c")
 
         await ctx.send(f"that's **{new_temp:,.1f}°{unit}**")
+
+    @commands.command()
+    async def google(self, ctx, *, query: str):
+        """google something and I'll give you a (relevant?) link"""
+        async with ctx.channel.typing():
+            res = random.choice([
+                "let's try this",
+                "give this one a try",
+                "this might be a good starting point",
+                "here u go",
+                "here you go",
+                "alright this one looks good",
+                "let's see... try this one",
+                "this might help",
+                "hope this is what you were looking for"
+                "i tried :)\n",
+                "this is the only one i could find",
+                "hope this is the right one"
+            ])
+            for i in search(query, safe='off' if ctx.channel.is_nsfw() else 'on', stop=1, pause=0):
+                await ctx.send(f"{res} {i}")
 
 
 def setup(bot):
