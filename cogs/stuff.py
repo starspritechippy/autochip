@@ -136,6 +136,28 @@ class Stuff(commands.Cog):
         ascii_art = image_to_ascii(await get_bytes(self.bot, url))
         await ctx.send(f"```{ascii_art}```")
 
+    @commands.command(aliases=["temp", "temparature"])
+    async def temperature(self, ctx, temp: str):
+        """translate between celsius and fahrenheit
+        expected inut is, for example would be 35c"""
+        try:
+            if temp[:1].lower() == "f":
+                new_temp, unit = (
+                    (int(temp[:-1].strip()) - 32) * (5/9),
+                    "C"
+                )
+            elif temp[:-1].lower() == "c":
+                new_temp, unit = (
+                    (int(temp[:-1].strip()) * (5/9)) + 32,
+                    "F"
+                )
+            else:
+                return await ctx.send("invalid temperature given, did you forget the c or f at the end?")
+        except ValueError:
+            return await ctx.send("invalid temperature format, try <number>[c/f], for example 35c")
+
+        await ctx.send(f"that's **{new_temp}°{unit}**")
+
 
 def setup(bot):
     bot.add_cog(Stuff(bot))
