@@ -1,10 +1,10 @@
 from discord.ext import commands
-from config import token
+from config import token, prefix
 import os
 import traceback
 import aiohttp
 
-bot = commands.Bot(command_prefix="ok ")
+bot = commands.Bot(command_prefix=prefix)
 bot.session = aiohttp.ClientSession()
 
 for cog in os.listdir("cogs"):
