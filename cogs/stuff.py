@@ -141,22 +141,24 @@ class Stuff(commands.Cog):
         """translate between celsius and fahrenheit
         expected inut is, for example would be 35c"""
         try:
-            if temp[:1].lower() == "f":
+            if temp[-1].lower() == "f":
                 new_temp, unit = (
                     (int(temp[:-1].strip()) - 32) * (5/9),
                     "C"
                 )
-            elif temp[:-1].lower() == "c":
+                print(new_temp, unit)
+            elif temp[-1].lower() == "c":
                 new_temp, unit = (
                     (int(temp[:-1].strip()) * (5/9)) + 32,
                     "F"
                 )
+                print(new_temp, unit)
             else:
                 return await ctx.send("invalid temperature given, did you forget the c or f at the end?")
         except ValueError:
             return await ctx.send("invalid temperature format, try <number>[c/f], for example 35c")
 
-        await ctx.send(f"that's **{new_temp}°{unit}**")
+        await ctx.send(f"that's **{new_temp:,.1f}°{unit}**")
 
 
 def setup(bot):
