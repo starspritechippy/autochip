@@ -146,13 +146,11 @@ class Stuff(commands.Cog):
                     (int(temp[:-1].strip()) - 32) * (5/9),
                     "C"
                 )
-                print(new_temp, unit)
             elif temp[-1].lower() == "c":
                 new_temp, unit = (
                     (int(temp[:-1].strip()) * (9/5)) + 32,
                     "F"
                 )
-                print(new_temp, unit)
             else:
                 return await ctx.send("invalid temperature given, did you forget the c or f at the end?")
         except ValueError:
