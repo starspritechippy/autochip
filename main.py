@@ -1,10 +1,24 @@
-from discord.ext import commands
-from config import token, prefix
 import os
+import re
 import traceback
-import aiohttp
 
-bot = commands.Bot(command_prefix=prefix)
+import aiohttp
+from discord.ext import commands
+
+from config import prefix, token
+
+fallback = os.urandom(32).hex()
+
+
+def get_pre(bot, msg):
+    comp = re.compile("^(" + "|".join(map(re.escape, prefix)) + ").*", flags=re.I)
+    match = comp.match(msg.content)
+    if match is not None:
+        return match.group(1)
+    return fallback
+
+
+bot = commands.Bot(command_prefix=get_pre)
 bot.session = aiohttp.ClientSession()
 
 for cog in os.listdir("cogs"):
