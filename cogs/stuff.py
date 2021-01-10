@@ -75,7 +75,11 @@ class Stuff(commands.Cog):
             )
 
         await try_delete_message(ctx.message)
-        await webhook.send(text, username=ctx.author.display_name, avatar_url=str(ctx.author.avatar_url))
+        await webhook.send(
+            text,
+            username=ctx.author.display_name,
+            avatar_url=str(ctx.author.avatar_url),
+        )
 
     @commands.command()
     async def echo(self, ctx, *, text):
@@ -145,19 +149,17 @@ class Stuff(commands.Cog):
         expected inut is, for example would be 35c"""
         try:
             if temp[-1].lower() == "f":
-                new_temp, unit = (
-                    (int(temp[:-1].strip()) - 32) * (5 / 9),
-                    "C"
-                )
+                new_temp, unit = ((int(temp[:-1].strip()) - 32) * (5 / 9), "C")
             elif temp[-1].lower() == "c":
-                new_temp, unit = (
-                    (int(temp[:-1].strip()) * (9 / 5)) + 32,
-                    "F"
-                )
+                new_temp, unit = ((int(temp[:-1].strip()) * (9 / 5)) + 32, "F")
             else:
-                return await ctx.send("invalid temperature given, did you forget the c or f at the end?")
+                return await ctx.send(
+                    "invalid temperature given, did you forget the c or f at the end?"
+                )
         except ValueError:
-            return await ctx.send("invalid temperature format, try <number>[c/f], for example 35c")
+            return await ctx.send(
+                "invalid temperature format, try <number>[c/f], for example 35c"
+            )
 
         await ctx.send(f"that's **{new_temp:,.1f}°{unit}**")
 
@@ -165,21 +167,24 @@ class Stuff(commands.Cog):
     async def google(self, ctx, *, query: str):
         """google something and I'll give you a (relevant?) link"""
         async with ctx.channel.typing():
-            res = random.choice([
-                "let's try this",
-                "give this one a try",
-                "this might be a good starting point",
-                "here u go",
-                "here you go",
-                "alright this one looks good",
-                "let's see... try this one",
-                "this might help",
-                "hope this is what you were looking for"
-                "i tried :)\n",
-                "this is the only one i could find",
-                "hope this is the right one"
-            ])
-            src = search(query, safe='off' if ctx.channel.is_nsfw() else 'on', stop=1, pause=0)
+            res = random.choice(
+                [
+                    "let's try this",
+                    "give this one a try",
+                    "this might be a good starting point",
+                    "here u go",
+                    "here you go",
+                    "alright this one looks good",
+                    "let's see... try this one",
+                    "this might help",
+                    "hope this is what you were looking for" "i tried :)\n",
+                    "this is the only one i could find",
+                    "hope this is the right one",
+                ]
+            )
+            src = search(
+                query, safe="off" if ctx.channel.is_nsfw() else "on", stop=1, pause=0
+            )
             link = list(src)[0]
         await ctx.send(f"{res} {link}")
 
@@ -190,25 +195,28 @@ class Stuff(commands.Cog):
             src = Search(query, limit=1).result()
         result = src["result"][0]
         link = result["link"]
-        res = random.choice([
-            "let's try this one",
-            "give this one a try",
-            "this might be a good starting point",
-            "here u go",
-            "here you go",
-            "alright this one looks good",
-            "let's see... try this one",
-            "hope this is what you were looking for"
-            "i tried :)\n",
-            "this is the best one i could find",
-            "hope this is the right one"
-        ])
+        res = random.choice(
+            [
+                "let's try this one",
+                "give this one a try",
+                "this might be a good starting point",
+                "here u go",
+                "here you go",
+                "alright this one looks good",
+                "let's see... try this one",
+                "hope this is what you were looking for" "i tried :)\n",
+                "this is the best one i could find",
+                "hope this is the right one",
+            ]
+        )
         await ctx.send(f"{res} {link}")
 
     @commands.command(usage="<content>")
     async def remember(self, ctx, *, content: str = ""):
         """remember text content to recall later
-        also see commands recall and forget"""
+        also see commands recall and forget
+
+        results are cached, meaning if the bot restarts, the remembered things are gone"""
         if not content:
             return await ctx.invoke(self.bot.get_command("recall"))
         self.thoughts[ctx.author.id] = content
@@ -217,7 +225,9 @@ class Stuff(commands.Cog):
     @commands.command()
     async def recall(self, ctx):
         """recall the remembered text content
-        also view commands remember and forget"""
+        also view commands remember and forget
+
+        results are cached, meaning if the bot restarts, the remembered things are gone"""
         try:
             await ctx.send(self.thoughts[ctx.author.id])
         except KeyError:
@@ -226,7 +236,8 @@ class Stuff(commands.Cog):
     @commands.command()
     async def forget(self, ctx):
         """forget the remembered text content
-        also view commands remember and recall"""
+        also view commands remember and recall
+        results are cached, meaning if the bot restarts, the remembered things are gone"""
         try:
             del self.thoughts[ctx.author.id]
             await ctx.send("alright, i forgot your content")
