@@ -31,6 +31,7 @@ class Stuff(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.thoughts = {}
 
     @commands.command()
     async def countdown(self, ctx, number: int = 3):
@@ -40,7 +41,7 @@ class Stuff(commands.Cog):
             return await ctx.send("what did i say >:(")
         nums = list(range(number))
         nums.reverse()
-        nums = [i+1 for i in nums]
+        nums = [i + 1 for i in nums]
         for i in nums:
             await ctx.send(f"{i}...")
             await sleep(1)
@@ -101,7 +102,7 @@ class Stuff(commands.Cog):
         if not choice.lower() in ["rock", "paper", "scissors"]:
             return await ctx.send(f"lol what's {choice} supposed to be")
 
-        if random.randint(0,100) == 69:
+        if random.randint(0, 100) == 69:
             # guess we'll make it a draw
             bchoice = choice
             outcome = "that's a draw"
@@ -145,12 +146,12 @@ class Stuff(commands.Cog):
         try:
             if temp[-1].lower() == "f":
                 new_temp, unit = (
-                    (int(temp[:-1].strip()) - 32) * (5/9),
+                    (int(temp[:-1].strip()) - 32) * (5 / 9),
                     "C"
                 )
             elif temp[-1].lower() == "c":
                 new_temp, unit = (
-                    (int(temp[:-1].strip()) * (9/5)) + 32,
+                    (int(temp[:-1].strip()) * (9 / 5)) + 32,
                     "F"
                 )
             else:
@@ -204,7 +205,33 @@ class Stuff(commands.Cog):
         ])
         await ctx.send(f"{res} {link}")
 
+    @commands.command(usage="<content>")
+    async def remember(self, ctx, *, content: str = ""):
+        """remember text content to recall later
+        also see commands recall and forget"""
+        if not content:
+            return await ctx.invoke(self.bot.get_command("recall"))
+        self.thoughts[ctx.author.id] = content
+        await ctx.send("alright, I'll remember that for later")
 
+    @commands.command()
+    async def recall(self, ctx):
+        """recall the remembered text content
+        also view commands remember and forget"""
+        try:
+            await ctx.send(self.thoughts[ctx.author.id])
+        except KeyError:
+            await ctx.send("i don't remember you telling me something...")
+
+    @commands.command()
+    async def forget(self, ctx):
+        """forget the remembered text content
+        also view commands remember and recall"""
+        try:
+            del self.thoughts[ctx.author.id]
+            await ctx.send("alright, i forgot your content")
+        except KeyError:
+            await ctx.send("i don't remember you telling me something...")
 
 
 def setup(bot):
