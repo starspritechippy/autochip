@@ -4,6 +4,7 @@ from asyncio import sleep
 import discord
 from discord.ext import commands
 from googlesearch import search
+from youtubesearchpython import Search
 
 from .utils.image import get_bytes, image_to_ascii
 
@@ -180,6 +181,30 @@ class Stuff(commands.Cog):
             src = search(query, safe='off' if ctx.channel.is_nsfw() else 'on', stop=1, pause=0)
             link = list(src)[0]
         await ctx.send(f"{res} {link}")
+
+    @commands.command(aliases=["yt"])
+    async def youtube(self, ctx, *, query: str):
+        """find a youtube video"""
+        async with ctx.channel.typing():
+            src = Search(query, limit=1).result()
+        result = src["result"][0]
+        link = result["link"]
+        res = random.choice([
+            "let's try this one",
+            "give this one a try",
+            "this might be a good starting point",
+            "here u go",
+            "here you go",
+            "alright this one looks good",
+            "let's see... try this one",
+            "hope this is what you were looking for"
+            "i tried :)\n",
+            "this is the best one i could find",
+            "hope this is the right one"
+        ])
+        await ctx.send(f"{res} {link}")
+
+
 
 
 def setup(bot):
