@@ -177,8 +177,9 @@ class Stuff(commands.Cog):
                 "this is the only one i could find",
                 "hope this is the right one"
             ])
-            for i in search(query, safe='off' if ctx.channel.is_nsfw() else 'on', stop=1, pause=0):
-                await ctx.send(f"{res} {i}")
+            src = search(query, safe='off' if ctx.channel.is_nsfw() else 'on', stop=1, pause=0)
+            link = list(src)[0]
+        await ctx.send(f"{res} {link}")
 
 
 def setup(bot):
