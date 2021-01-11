@@ -245,6 +245,24 @@ class Stuff(commands.Cog):
         except KeyError:
             await ctx.send("i don't remember you telling me something...")
 
+    @commands.group(invoke_without_command=False)
+    async def random(self, ctx):
+        """group command for random stuff"""
+        return
+
+    @random.command()
+    async def member(self, ctx):
+        """get a random member of this server"""
+        members = [x for x in ctx.guild.members if not x.bot]
+        choice = random.choice(members)
+        await ctx.send(f"random member: {choice}")
+
+    @random.command()
+    async def number(self, ctx, num: int = 100):
+        """get a random number between 0 and <num>
+        num defaults to 100"""
+        await ctx.send(f"your number: {random.randint(0, abs(num))}")
+
 
 def setup(bot):
     bot.add_cog(Stuff(bot))

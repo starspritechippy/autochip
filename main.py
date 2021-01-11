@@ -3,6 +3,7 @@ import re
 import traceback
 
 import aiohttp
+import discord
 from discord.ext import commands
 
 from config import prefix, token
@@ -10,7 +11,7 @@ from config import prefix, token
 fallback = os.urandom(32).hex()
 
 
-def get_pre(bot, msg):
+def get_pre(_, msg):
     comp = re.compile("^(" + "|".join(map(re.escape, prefix)) + ").*", flags=re.I)
     match = comp.match(msg.content)
     if match is not None:
@@ -18,7 +19,10 @@ def get_pre(bot, msg):
     return fallback
 
 
-bot = commands.Bot(command_prefix=get_pre)
+intents = discord.Intents.default()
+intents.members = True
+
+bot = commands.Bot(command_prefix=get_pre, intents=intents)
 bot.session = aiohttp.ClientSession()
 
 for cog in os.listdir("cogs"):
