@@ -95,7 +95,9 @@ class Stuff(commands.Cog):
 
         nchoices = [x.strip() for x in choices.split(",")]
         if len(nchoices) == 1:
-            return await ctx.send(f"tough choice huh...")
+            nchoices = [x.strip() for x in nchoices[0].split(" ")]
+            if len(nchoices) == 1:
+                return await ctx.send(f"tough choice huh...")
 
         final = random.choice(nchoices)
         await ctx.send(f"i chose **{final}** for you :)")
