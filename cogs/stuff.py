@@ -247,6 +247,23 @@ class Stuff(commands.Cog):
         except KeyError:
             await ctx.send("i don't remember you telling me something...")
 
+    @commands.command(aliases=["rc", "randomcolour"])
+    async def randomcolor(self, ctx):
+        """show you a random color :)"""
+        col = random.randint(0, 16777215)
+        recol = str(hex(col).split("x")[1])
+        r, g, b = recol[0:2], recol[2:4], recol[4:6]
+        embed = discord.Embed(
+            title="#" + recol.upper(),
+            url=f"https://www.color-hex.com/color/{recol}",
+            description=f"""Red: {int(r, base=16)}
+Green: {int(g, base=16)}
+Blue: {int(b, base=16)}""",
+            color=col
+        )
+        embed.set_image(url=f"https://htmlcolors.com/color-image/{recol}.png")
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Stuff(bot))
