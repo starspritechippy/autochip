@@ -264,6 +264,21 @@ Blue: {int(b, base=16)}""",
         embed.set_image(url=f"https://htmlcolors.com/color-image/{recol}.png")
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def submit(self, ctx, *, content: str = None):
+        """submits an event submission anonymously to the event submission channel
+        attached files and embeds (if you somehow put embeds to your message) will be sent as well"""
+        attachments = ctx.message.attachments
+        files = [await attachment.to_file() for attachment in attachments]
+        await try_delete_message(ctx.message)
+        guild = self.bot.get_guild(738627945056174230)
+        channel = guild.get_channel(760366600284799016)
+        try:
+            await channel.send(content, files=files)
+        except discord.HTTPException:
+            # someone tried to send an empty message
+            await ctx.send("You can't submit nothing :(", delete_after=5)
+
 
 def setup(bot):
     bot.add_cog(Stuff(bot))
