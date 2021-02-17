@@ -2,6 +2,7 @@ import random
 from asyncio import sleep
 
 import discord
+import numpy
 from discord.ext import commands
 from googlesearch import search
 from youtubesearchpython import Search
@@ -19,6 +20,13 @@ def tiny_text(character: str):
         return character
 
 
+def gauss(x) -> float:
+    peak = 0.3
+    e_fun = numpy.e ** (-0.5 * ((x - 30) / 1.76)**2)
+    y = peak * e_fun
+    return y + 0.05
+
+
 async def try_delete_message(message: discord.Message):
     try:
         await message.delete()
@@ -32,6 +40,7 @@ class Stuff(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.thoughts = {}
+        self.wt_records = {}
 
     @commands.command()
     async def countdown(self, ctx, number: int = 3):
@@ -278,6 +287,34 @@ Blue: {int(b, base=16)}""",
         except discord.HTTPException:
             # someone tried to send an empty message
             await ctx.send("You can't submit nothing :(", delete_after=5)
+
+    @commands.command(aliases=["wt", "timewaste", "tw"])
+    async def wastetime(self, ctx):
+        """waste time
+        wasted time is decided at random
+        leaderboard coming soon™"""
+        msg = await ctx.send("Started wasting time... <a:loading:810551507694649366>")
+        counter = 0
+        out = gauss(0)
+        rand = random.random()
+        while out <= rand:
+            rand = random.random()
+            out = gauss(counter)
+            counter += 1
+            await sleep(1)
+
+        personal_record = self.wt_records.get(ctx.author.id, 0)
+        self.wt_records.update({ctx.author.id: counter})
+
+        await msg.edit(content="Done wasting time!")
+
+        await ctx.send(
+            "{0} you successfully wasted **{1} seconds**!\n{2}".format(
+                ctx.author.mention,
+                counter,
+                "That's a new personal record :)" if counter > personal_record else ""
+            )
+        )
 
 
 def setup(bot):
