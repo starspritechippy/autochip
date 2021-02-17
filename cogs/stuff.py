@@ -1,5 +1,6 @@
 import random
 from asyncio import sleep
+from typing import Optional
 
 import discord
 import numpy
@@ -32,6 +33,13 @@ async def try_delete_message(message: discord.Message):
         await message.delete()
     except discord.Forbidden:
         pass
+
+
+def luckynumber(number: int):
+    snum = str(abs(number))
+    while not len(snum) == 1:
+        snum = str(sum([int(x) for x in snum]))
+    return int(snum)
 
 
 class Stuff(commands.Cog):
@@ -287,6 +295,25 @@ Blue: {int(b, base=16)}""",
         except discord.HTTPException:
             # someone tried to send an empty message
             await ctx.send("You can't submit nothing :(", delete_after=5)
+
+    @commands.group(aliases=["lucky", "luckynum"], invoke_without_command=True)
+    async def luckynumber(self, ctx, num: int):
+        """group command: gets the lucky number any number/user/the server"""
+        lnum = luckynumber(num)
+        await ctx.send(f"The lucky number for {num} is **{lnum}!**")
+
+    @luckynumber.command()
+    async def user(self, ctx, user: Optional[discord.Member]):
+        user = user or ctx.author
+        lnum = luckynumber(user.id)
+        await ctx.send(f"{user.display_name}'s lucky number is **{lnum}!**")
+
+    @luckynumber.command()
+    async def server(self, ctx):
+        if not ctx.guild:
+            return await ctx.send("That won't work if you're using this in DMs :p")
+        lnum = luckynumber(ctx.guild.id)
+        await ctx.send(f"{ctx.guild.name}'s lucky number is **{lnum}!**")
 
     @commands.command(aliases=["wt", "timewaste", "tw"])
     async def wastetime(self, ctx):
