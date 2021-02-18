@@ -4,11 +4,12 @@ from typing import Optional
 
 import discord
 import numpy
+from bs4 import BeautifulSoup
 from discord.ext import commands
 from googlesearch import search
 from youtubesearchpython import Search
 
-from .utils.image import get_bytes, image_to_ascii
+from utils.image import get_bytes, image_to_ascii
 
 
 def tiny_text(character: str):
@@ -23,7 +24,7 @@ def tiny_text(character: str):
 
 def gauss(x) -> float:
     peak = 0.3
-    e_fun = numpy.e ** (-0.5 * ((x - 30) / 1.76)**2)
+    e_fun = numpy.e ** (-0.5 * ((x - 30) / 1.76) ** 2)
     y = peak * e_fun
     return y + 0.05
 
@@ -343,6 +344,20 @@ Blue: {int(b, base=16)}""",
                 "That's a new personal record :)" if counter > personal_record else ""
             )
         )
+
+    @commands.command()
+    async def define(self, ctx, word: str):
+        """define a word?"""
+        async with self.bot.session.get(f"https://www.merriam-webster.com/dictionary/{word.lower()}") as r:
+            html = await r.text()
+
+        html = BeautifulSoup(html)
+        # find the definition text
+        with_tags = html.find_all("span", {"class": "dtText"})
+        if not with_tags:
+            return await ctx.send("this word was not found :(\nplease be precise in spelling")
+        definitions = [BeautifulSoup(str(x)).get_text() for x in with_tags]
+        await ctx.send("\n--\n".join(definitions))
 
 
 def setup(bot):
