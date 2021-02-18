@@ -196,7 +196,8 @@ class Stuff(commands.Cog):
                     "alright this one looks good",
                     "let's see... try this one",
                     "this might help",
-                    "hope this is what you were looking for" "i tried :)\n",
+                    "hope this is what you were looking for",
+                    "i tried :)\n",
                     "this is the only one i could find",
                     "hope this is the right one",
                 ]
