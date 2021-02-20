@@ -1,12 +1,14 @@
+import asyncio
 import os
 import re
 import traceback
 
 import aiohttp
+import asyncpg
 import discord
 from discord.ext import commands
 
-from config import prefix, token
+from config import prefix, token, postgres_login
 
 fallback = os.urandom(32).hex()
 
@@ -22,22 +24,23 @@ def get_pre(_, msg):
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix=get_pre, intents=intents)
-bot.session = aiohttp.ClientSession()
 
-for cog in os.listdir("cogs"):
-    if cog.endswith(".py"):
-        try:
-            bot.load_extension(f"cogs.{cog[:-3]}")
-            print(f"{cog[:-3]} loaded successfully")
-        except commands.ExtensionError:
-            traceback.print_exc()
-bot.load_extension("jishaku")
+async def start():
+    bot = commands.Bot(command_prefix=get_pre, intents=intents)
+    bot.session = aiohttp.ClientSession()
 
+    bot.db = await asyncpg.connect(**postgres_login)
 
-@bot.event
-async def on_ready():
-    print("Autochip ready to rock")
+    for cog in os.listdir("cogs"):
+        if cog.endswith(".py"):
+            try:
+                bot.load_extension(f"cogs.{cog[:-3]}")
+                print(f"{cog[:-3]} loaded successfully")
+            except commands.ExtensionError:
+                traceback.print_exc()
+    bot.load_extension("jishaku")
 
+    await bot.start(token)
 
-bot.run(token)
+loop = asyncio.get_event_loop()
+loop.run_until_complete(start())
