@@ -1,6 +1,5 @@
 import random
 from asyncio import sleep
-from typing import Union
 
 import discord
 import numpy
@@ -72,6 +71,7 @@ class TimeWaste(commands.Cog):
         )
         return isrecord
 
+    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.group(aliases=["wt", "tw", "timewaste"], invoke_without_command=True)
     async def wastetime(self, ctx):
         """waste time

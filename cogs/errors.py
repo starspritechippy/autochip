@@ -32,6 +32,8 @@ class ErrorHandler(commands.Cog):
             )
         elif isinstance(error, commands.DisabledCommand):
             return await ctx.send("This command is disabled.")
+        elif isinstance(error, commands.MaxConcurrencyReached):
+            return await ctx.send("You are already using this command. Only one at the same time per user.")
         else:
             return await ctx.send(
                 "Error while using this command!\n\n**{0}**: {1}\n```{2}```".format(
