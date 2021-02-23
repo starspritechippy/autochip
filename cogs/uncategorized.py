@@ -86,33 +86,29 @@ Blue: {int(b, base=16)}""",
             # someone tried to send an empty message
             await ctx.send("You can't submit nothing :(", delete_after=5)
 
-    # @commands.command(aliases=["wt", "timewaste", "tw"])
-    # async def wastetime(self, ctx):
-    #     """waste time
-    #     wasted time is decided at random
-    #     leaderboard coming soon™"""
-    #     msg = await ctx.send("Started wasting time... <a:loading:810551507694649366>")
-    #     counter = 0
-    #     out = gauss(0)
-    #     rand = random.random()
-    #     while out <= rand:
-    #         rand = random.random()
-    #         out = gauss(counter)
-    #         counter += 1
-    #         await sleep(1)
-    #
-    #     personal_record = self.wt_records.get(ctx.author.id, 0)
-    #     self.wt_records.update({ctx.author.id: counter})
-    #
-    #     await msg.edit(content="Done wasting time!")
-    #
-    #     await ctx.send(
-    #         "{0} you successfully wasted **{1} seconds**!\n{2}".format(
-    #             ctx.author.mention,
-    #             counter,
-    #             "That's a new personal record :)" if counter > personal_record else ""
-    #         )
-    #     )
+    @commands.command()
+    async def invite(self, ctx):
+        """get an invite link so I can join your server"""
+        await ctx.send("<https://discord.com/api/oauth2/authorize?client_id=793856553631350804&permissions=387072&scope=bot>")
+
+    @commands.command(aliases=["gn"])
+    async def goodnight(self, ctx):
+        """gn"""
+        await sleep(0.5)
+        cy = random.choice([
+            "gn hun",
+            "gn hon",
+            "good night cute",
+            "good night bb",
+            "goodnight :*",
+            "night night",
+            "good night luv"
+        ])
+        await ctx.send(cy)
+        if not ctx.guild:
+            return
+        await sleep(0.5)
+        await ctx.send(f"??cuddle {ctx.author.mention}")
 
 
 def setup(bot):
