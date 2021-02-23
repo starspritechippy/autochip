@@ -4,6 +4,7 @@ import re
 import traceback
 
 import aiohttp
+import aioscheduler
 import asyncpg
 import discord
 from discord.ext import commands
@@ -28,6 +29,8 @@ intents.members = True
 async def start():
     bot = commands.Bot(command_prefix=get_pre, intents=intents)
     bot.session = aiohttp.ClientSession()
+    bot.scheduler = aioscheduler.TimedScheduler()
+    bot.scheduler.start()
 
     bot.db = await asyncpg.connect(**postgres_login)
 

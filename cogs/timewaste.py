@@ -1,5 +1,6 @@
 import random
 from asyncio import sleep
+from datetime import datetime, timedelta
 
 import discord
 import numpy
@@ -71,6 +72,18 @@ class TimeWaste(commands.Cog):
         )
         return isrecord
 
+    async def send_wt_result(self, *, context, message, counter):
+        record = await self.record_time(counter, context.author.id)
+        await message.edit(content="Done wasting time!")
+        await context.send(
+            "{0} you successfully wasted **{1} seconds**!\n{2}".format(
+                context.author.mention,
+                counter,
+                "That's a new personal record :)" if record else ""
+            )
+        )
+        return
+
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.group(aliases=["wt", "tw", "timewaste"], invoke_without_command=True)
     async def wastetime(self, ctx):
@@ -85,18 +98,11 @@ class TimeWaste(commands.Cog):
             rand = random.random()
             out = gauss(counter)
             counter += 1
-            await sleep(1)
 
-        record = await self.record_time(counter, ctx.author.id)
-
-        await msg.edit(content="Done wasting time!")
-
-        await ctx.send(
-            "{0} you successfully wasted **{1} seconds**!\n{2}".format(
-                ctx.author.mention,
-                counter,
-                "That's a new personal record :)" if record else ""
-            )
+        self.bot.scheduler.schedule(
+            self.send_wt_result(context=ctx, message=msg, counter=counter),
+            # datetime.utcnow() + timedelta(seconds=counter)
+            datetime.utcnow() + timedelta(seconds=180)
         )
 
     @wastetime.command(usage="[global/@user/personal]")
