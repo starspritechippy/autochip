@@ -101,13 +101,7 @@ def pixels_to_ascii(img: Image):
 
 
 def image_to_ascii(img_bytes):
-    pixels = pixels_to_ascii(
-        gray_image(
-            resize_image(
-                open_image(img_bytes)
-            )
-        )
-    )
+    pixels = pixels_to_ascii(gray_image(resize_image(open_image(img_bytes))))
     pixel_count = len(pixels)
     done = "\n".join(pixels[i : i + 57] for i in range(0, pixel_count, 57))
     return done

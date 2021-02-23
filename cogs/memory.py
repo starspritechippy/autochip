@@ -4,7 +4,7 @@ from discord.ext import commands
 
 class Memory(commands.Cog):
     """commands related to remembering and recalling things"""
-    
+
     def __init__(self, bot):
         self.thoughts = {}
         self.bot = bot
@@ -18,12 +18,12 @@ class Memory(commands.Cog):
         if not content:
             return await ctx.invoke(self.bot.get_command("recall"))
         await self.bot.db.execute(
-            '''INSERT INTO memory ("user", content) VALUES ($1, $2) 
+            """INSERT INTO memory ("user", content) VALUES ($1, $2) 
             ON CONFLICT ("user") DO UPDATE
             SET content = $2;
-            ''',
+            """,
             ctx.author.id,
-            content
+            content,
         )
         await ctx.send("okay i will remember this for you")
 
@@ -34,21 +34,25 @@ class Memory(commands.Cog):
 
         results are cached, meaning if the bot restarts, the remembered things are gone"""
         rem = await self.bot.db.fetchval(
-            '''
+            """
             SELECT content FROM memory WHERE "user"=$1;
-            ''',
-            ctx.author.id
+            """,
+            ctx.author.id,
         )
         if not rem:
             return await ctx.send("i don't remember you telling me something...")
-        await ctx.send(rem, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False))
+        await ctx.send(
+            rem, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False)
+        )
 
     @commands.command()
     async def forget(self, ctx):
         """forget the remembered text content
         also view commands remember and recall
         results are cached, meaning if the bot restarts, the remembered things are gone"""
-        await self.bot.db.execute('''DELETE FROM memory WHERE "user"=$1;''', ctx.author.id)
+        await self.bot.db.execute(
+            """DELETE FROM memory WHERE "user"=$1;""", ctx.author.id
+        )
         await ctx.send("alright, i forgot your content")
 
 

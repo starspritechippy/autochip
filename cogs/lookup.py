@@ -44,7 +44,7 @@ class Lookup(commands.Cog):
         async with ctx.channel.typing():
             src = Search(query, limit=1).result()
         result = src["result"][0]
-        link = result["link"] # noqa
+        link = result["link"]  # noqa
         res = random.choice(
             [
                 "let's try this one",
@@ -65,15 +65,21 @@ class Lookup(commands.Cog):
     @commands.command()
     async def define(self, ctx, word: str):
         """define a word?"""
-        async with self.bot.session.get(f"https://www.merriam-webster.com/dictionary/{word.lower()}") as r:
+        async with self.bot.session.get(
+            f"https://www.merriam-webster.com/dictionary/{word.lower()}"
+        ) as r:
             html = await r.text()
 
         html = BeautifulSoup(html, features="html.parser")
         # find the definition text
         with_tags = html.find_all("span", {"class": "dtText"})
         if not with_tags:
-            return await ctx.send("this word was not found :(\nplease be precise in spelling")
-        definitions = [BeautifulSoup(str(x), features="html.parser").get_text() for x in with_tags]
+            return await ctx.send(
+                "this word was not found :(\nplease be precise in spelling"
+            )
+        definitions = [
+            BeautifulSoup(str(x), features="html.parser").get_text() for x in with_tags
+        ]
         for d in definitions:
             d.replace(":", "")
         await ctx.send("\n---\n".join(definitions))

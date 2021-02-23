@@ -6,6 +6,7 @@ from discord.ext import commands
 
 class ErrorHandler(commands.Cog):
     """handles errors duh"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -15,11 +16,9 @@ class ErrorHandler(commands.Cog):
             return
         elif isinstance(error, commands.CommandOnCooldown):
             time = timedelta(seconds=int(error.retry_after))
-            return await ctx.send(
-                "You are on cooldown! Try again in {0}.".format(time)
-            )
+            return await ctx.send("You are on cooldown! Try again in {0}.".format(time))
         elif isinstance(
-                error, (commands.errors.UserInputError, commands.errors.BadUnionArgument)
+            error, (commands.errors.UserInputError, commands.errors.BadUnionArgument)
         ):
             return await ctx.send(
                 "Looks like some of your input was incorrect... Check"
@@ -33,7 +32,9 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.DisabledCommand):
             return await ctx.send("This command is disabled.")
         elif isinstance(error, commands.MaxConcurrencyReached):
-            return await ctx.send("You are already using this command. Only one at the same time per user.")
+            return await ctx.send(
+                "You are already using this command. Only one at the same time per user."
+            )
         else:
             return await ctx.send(
                 "Error while using this command!\n\n**{0}**: {1}\n```{2}```".format(

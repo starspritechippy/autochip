@@ -15,11 +15,11 @@ def gauss(x) -> float:
 
 
 def ordinal(n):
-    return "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
+    return "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4])
 
 
 def custom_strftime(fmt, t):
-    return t.strftime(fmt).replace('{S}', ordinal(t.day))
+    return t.strftime(fmt).replace("{S}", ordinal(t.day))
 
 
 def natural_join(l):
@@ -52,7 +52,7 @@ class TimeWaste(commands.Cog):
 
     async def record_time(self, time: int, user: int):
         isrecord = await self.bot.db.fetchval(
-            '''
+            """
             SELECT $1 > (
               SELECT time 
               FROM timewastes
@@ -60,15 +60,20 @@ class TimeWaste(commands.Cog):
               ORDER BY time DESC
               LIMIT 1
             );
-            ''', time, user
+            """,
+            time,
+            user,
         )
         if isrecord is None:
             isrecord = True
         await self.bot.db.execute(
-            '''
+            """
             INSERT INTO timewastes ("user", time, achieved, record)
             VALUES ($1, $2, now(), $3);
-            ''', user, time, isrecord
+            """,
+            user,
+            time,
+            isrecord,
         )
         return isrecord
 
@@ -79,7 +84,7 @@ class TimeWaste(commands.Cog):
             "{0} you successfully wasted **{1} seconds**!\n{2}".format(
                 context.author.mention,
                 counter,
-                "That's a new personal record :)" if record else ""
+                "That's a new personal record :)" if record else "",
             )
         )
         return
@@ -101,23 +106,28 @@ class TimeWaste(commands.Cog):
 
         self.bot.scheduler.schedule(
             self.send_wt_result(context=ctx, message=msg, counter=counter),
-            datetime.utcnow() + timedelta(seconds=counter)
+            datetime.utcnow() + timedelta(seconds=counter),
         )
 
     @wastetime.command(usage="[global/@user/personal]")
     async def record(self, ctx, where: LbTypeConverter = "global"):
         """view the current record of a user, or overall"""
         if isinstance(where, discord.Member):
-            result = await self.bot.db.fetchrow('''
+            result = await self.bot.db.fetchrow(
+                """
             SELECT *
             FROM timewastes
             WHERE "user" = $1
             AND record IS TRUE
             ORDER BY time DESC, achieved ASC
-            ''', where.id)
+            """,
+                where.id,
+            )
 
             if not result:
-                return await ctx.send(f"{where.display_name} has not wasted any time yet.")
+                return await ctx.send(
+                    f"{where.display_name} has not wasted any time yet."
+                )
 
             time = result["time"]
             who = where.display_name
@@ -127,13 +137,15 @@ This time was achieved on **{when}**."""
 
         else:
             if where == "global":
-                result = await self.bot.db.fetch('''
+                result = await self.bot.db.fetch(
+                    """
                 SELECT *
                 FROM timewastes
                 WHERE record IS TRUE
                 AND time = (SELECT MAX(time) FROM timewastes)
                 ORDER BY time DESC, achieved ASC
-                ''')
+                """
+                )
 
                 if not result:
                     return await ctx.send("Nobody has not wasted any time yet.")
@@ -147,7 +159,13 @@ This time was achieved on **{when}**."""
                 whos = [str(self.bot.get_user(x)) or "unknown user(s)" for x in holders]
                 whos = list(set(whos))
                 whos.remove(str(who))
-                whostr = "Other users who also hold this record are {}.".format(natural_join(whos)) if whos else ""
+                whostr = (
+                    "Other users who also hold this record are {}.".format(
+                        natural_join(whos)
+                    )
+                    if whos
+                    else ""
+                )
                 desc = f"""The highest amount of wasted time is **{time} seconds**.
 This time was achieved on **{when}** by **{who}**.
 {whostr}
@@ -155,13 +173,16 @@ This time was achieved on **{when}** by **{who}**.
 
             else:
                 # personal record
-                result = await self.bot.db.fetchrow('''
+                result = await self.bot.db.fetchrow(
+                    """
                 SELECT *
                 FROM timewastes
                 WHERE "user" = $1
                 AND record IS TRUE
                 ORDER BY time DESC, achieved ASC
-                ''', ctx.author.id)
+                """,
+                    ctx.author.id,
+                )
 
                 if not result:
                     return await ctx.send("You have not wasted any time yet.")
@@ -172,8 +193,10 @@ This time was achieved on **{when}** by **{who}**.
 You achieved this time on {when}."""
 
         record_embed = discord.Embed(
-            title=f"{where} wastetime record" if isinstance(where, str) else f"{where.display_name}'s wastetime record",
-            description=desc
+            title=f"{where} wastetime record"
+            if isinstance(where, str)
+            else f"{where.display_name}'s wastetime record",
+            description=desc,
         )
         record_embed.set_footer(text="times are in UTC format")
         await ctx.send(embed=record_embed)

@@ -66,7 +66,7 @@ class Uncategorized(commands.Cog):
             description=f"""Red: {int(r, base=16)}
 Green: {int(g, base=16)}
 Blue: {int(b, base=16)}""",
-            color=col
+            color=col,
         )
         embed.set_image(url=f"https://htmlcolors.com/color-image/{recol}.png")
         await ctx.send(embed=embed)
@@ -89,21 +89,25 @@ Blue: {int(b, base=16)}""",
     @commands.command()
     async def invite(self, ctx):
         """get an invite link so I can join your server"""
-        await ctx.send("<https://discord.com/api/oauth2/authorize?client_id=793856553631350804&permissions=387072&scope=bot>")
+        await ctx.send(
+            "<https://discord.com/api/oauth2/authorize?client_id=793856553631350804&permissions=387072&scope=bot>"
+        )
 
     @commands.command(aliases=["gn"])
     async def goodnight(self, ctx):
         """gn"""
         await sleep(0.5)
-        cy = random.choice([
-            "gn hun",
-            "gn hon",
-            "good night cute",
-            "good night bb",
-            "goodnight :*",
-            "night night",
-            "good night luv"
-        ])
+        cy = random.choice(
+            [
+                "gn hun",
+                "gn hon",
+                "good night cute",
+                "good night bb",
+                "goodnight :*",
+                "night night",
+                "good night luv",
+            ]
+        )
         await ctx.send(cy)
         if not ctx.guild:
             return
