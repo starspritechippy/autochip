@@ -60,9 +60,9 @@ class Uncategorized(commands.Cog):
             for user in afk_members:
                 reason = self.afk[user.id]
                 if not reason:
-                    afk_msgs.append(f"{user.display_name} is set as afk.")
+                    afk_msgs.append(f"{user} is set as afk.")
                 else:
-                    afk_msgs.append(f"{user.display_name} is set as afk: {reason}")
+                    afk_msgs.append(f"{user} is set as afk: {reason}")
             resp_message = "\n\n".join(afk_msgs)
             await message.channel.send(resp_message, allowed_mentions=discord.AllowedMentions.none())
 
