@@ -106,7 +106,7 @@ class TimeWaste(commands.Cog):
 
         self.bot.scheduler.schedule(
             self.send_wt_result(context=ctx, message=msg, counter=counter),
-            datetime.utcnow() + timedelta(seconds=counter),
+            datetime.utcnow() + timedelta(seconds=counter, milliseconds=1),
         )
 
     @wastetime.command(usage="[global/@user/personal]")
