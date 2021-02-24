@@ -114,6 +114,18 @@ Blue: {int(b, base=16)}""",
         await sleep(0.5)
         await ctx.send(f"??cuddle {ctx.author.mention}")
 
+    @commands.command()
+    async def ping(self, ctx):
+        """gives you the ping"""
+        msg = await ctx.send(
+            "Here is your requested ping", file=discord.File(fp="assets/sonar_ping.mp3")
+        )
+        await sleep(3)
+        await msg.edit(
+            content=msg.content
+            + "\n\nAnyhow my ping is {}ms".format(round(self.bot.latency * 1000, 1))
+        )
+
 
 def setup(bot):
     bot.add_cog(Uncategorized(bot))
