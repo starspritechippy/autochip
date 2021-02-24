@@ -49,6 +49,7 @@ class TimeWaste(commands.Cog):
     def __init__(self, bot):
         self.wt_records = {}
         self.bot = bot
+        self.wasting = []
 
     async def record_time(self, time: int, user: int):
         isrecord = await self.bot.db.fetchval(
@@ -87,14 +88,17 @@ class TimeWaste(commands.Cog):
                 "That's a new personal record :)" if record else "",
             )
         )
+        self.wasting.remove(context.author.id)
         return
 
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.group(aliases=["wt", "tw", "timewaste"], invoke_without_command=True)
     async def wastetime(self, ctx):
         """waste time
         wasted time is decided at random
         leaderboard coming soon™"""
+        if ctx.author.id in self.wasting:
+            return await ctx.send("You are already using this command, only one at a time per person.")
+        self.wasting.append(ctx.author.id)
         msg = await ctx.send("Started wasting time... <a:loading:810551507694649366>")
         counter = 0
         out = gauss(0)
