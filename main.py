@@ -24,6 +24,7 @@ def get_pre(_, msg):
 
 intents = discord.Intents.default()
 intents.members = True
+intents.typing = True
 
 
 async def start():

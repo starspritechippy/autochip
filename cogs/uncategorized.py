@@ -1,5 +1,6 @@
 import random
 from asyncio import sleep
+from typing import Optional
 
 import discord
 import numpy
@@ -20,6 +21,50 @@ class Uncategorized(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.afk = {}
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if payload.user_id not in self.afk:
+            return
+        del self.afk[payload.user_id]
+        await self.bot.http.send_message(payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk")
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        if payload.user_id not in self.afk:
+            return
+        del self.afk[payload.user_id]
+        await self.bot.http.send_message(payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk")
+
+    @commands.Cog.listener()
+    async def on_typing(self, channel, user, _):
+        """disable afk when user is seen typing"""
+        if user.id not in self.afk:
+            return
+        del self.afk[user.id]
+        await channel.send(f"{user.mention}, you are no longer marked as afk")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """custom on_message for afk checks"""
+        if message.author.id in self.afk and not message.content.lower().startswith("ok afk"):
+            del self.afk[message.author.id]
+            await message.channel.send("you are now no longer afk.")
+
+        if not message.mentions:
+            return
+        if any(x in self.afk for x in [u.id for u in message.mentions]):
+            afk_members = [user for user in message.mentions if user.id in self.afk]
+            afk_msgs = []
+            for user in afk_members:
+                reason = self.afk[user.id]
+                if not reason:
+                    afk_msgs.append(f"{user.display_name} is set as afk.")
+                else:
+                    afk_msgs.append(f"{user.display_name} is set as afk: {reason}")
+            resp_message = "\n\n".join(afk_msgs)
+            await message.channel.send(resp_message, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ascii", usage="<emoji or attached image>")
     async def make_ascii(self, ctx, emoji: discord.PartialEmoji = None):
@@ -125,6 +170,13 @@ Blue: {int(b, base=16)}""",
             content=msg.content
             + "\n\nAnyhow my ping is {}ms".format(round(self.bot.latency * 1000, 1))
         )
+
+    @commands.command()
+    async def afk(self, ctx, *, reason: Optional[str]):
+        """makes u go afk
+        and if someone pings you theyre gonna know why"""
+        self.afk[ctx.author.id] = reason
+        await ctx.send("okay, I set you as AFK")
 
 
 def setup(bot):
