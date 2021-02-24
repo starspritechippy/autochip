@@ -97,7 +97,9 @@ class TimeWaste(commands.Cog):
         wasted time is decided at random
         leaderboard coming soon™"""
         if ctx.author.id in self.wasting:
-            return await ctx.send("You are already using this command, only one at a time per person.")
+            return await ctx.send(
+                "You are already using this command, only one at a time per person."
+            )
         self.wasting.append(ctx.author.id)
         msg = await ctx.send("Started wasting time... <a:loading:810551507694649366>")
         counter = 0
@@ -129,12 +131,10 @@ class TimeWaste(commands.Cog):
             )
 
             if not result:
-                return await ctx.send(
-                    f"{where.display_name} has not wasted any time yet."
-                )
+                return await ctx.send(f"{where.name} has not wasted any time yet.")
 
             time = result["time"]
-            who = where.display_name
+            who = where.name
             when = custom_strftime("%B {S}, %Y at %I:%M%p", result["achieved"])
             desc = f"""**{who}**'s highest amount of wasted time is **{time} seconds**.
 This time was achieved on **{when}**."""
@@ -199,10 +199,81 @@ You achieved this time on {when}."""
         record_embed = discord.Embed(
             title=f"{where} wastetime record"
             if isinstance(where, str)
-            else f"{where.display_name}'s wastetime record",
+            else f"{where.name}'s wastetime record",
             description=desc,
         )
         record_embed.set_footer(text="times are in UTC format")
+        await ctx.send(embed=record_embed)
+
+    @wastetime.command()
+    async def total(self, ctx, where: LbTypeConverter = "global"):
+        """check the total amount of time wasted for a user, or overall"""
+        if isinstance(where, discord.Member):
+            result = await self.bot.db.fetchrow(
+                """
+            SELECT SUM(time), COUNT(*)
+            FROM timewastes
+            WHERE "user" = $1;
+            """,
+                where.id,
+            )
+
+            if not result:
+                return await ctx.send(f"{where.name} has not wasted any time yet.")
+
+            time = timedelta(seconds=result["sum"])
+            amount = result["count"]
+            who = where.name
+            desc = f"**{who}** has wasted **{time}** overall by wasting time **{amount} times**."
+
+        else:
+            if where == "global":
+                result = await self.bot.db.fetch(
+                    """
+                SELECT "user", SUM(time), COUNT(*)
+                FROM timewastes
+                GROUP BY "user"
+                ORDER BY SUM(time) DESC;
+                """
+                )
+
+                if not result:
+                    return await ctx.send("Nobody has not wasted any time yet.")
+
+                time_total = timedelta(seconds=sum([x["sum"] for x in result]))
+                time_best = timedelta(seconds=result[0]["sum"])
+                time_best_who = (
+                    ctx.guild.get_member(result[0]["user"]) or "an unknown user"
+                )
+                amount_all = sum([x["count"] for x in result])
+                amount_best = result[0]["count"]
+                desc = f"""All together, this community has wasted **{time_total}** with **{amount_all} commmand uses**.
+The user who contributed to this the most is **{time_best_who}**, who wasted **{time_best}** with **{amount_best} command uses**."""
+
+            else:
+                # personal total
+                result = await self.bot.db.fetchrow(
+                    """
+                SELECT SUM(time), COUNT(*)
+                FROM timewastes
+                WHERE "user" = $1
+                """,
+                    ctx.author.id,
+                )
+
+                if not result:
+                    return await ctx.send("You have not wasted any time yet.")
+
+                time = timedelta(seconds=result["sum"])
+                amount = result["count"]
+                desc = f"Your personal wasted time total is **{time}** with **{amount} command uses**."
+
+        record_embed = discord.Embed(
+            title=f"{where} wastetime total"
+            if isinstance(where, str)
+            else f"{where.name}'s wastetime record",
+            description=desc,
+        )
         await ctx.send(embed=record_embed)
 
 
