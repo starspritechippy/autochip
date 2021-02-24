@@ -1,9 +1,10 @@
 import random
 
-from bs4 import BeautifulSoup
 from discord.ext import commands
 from googlesearch import search
 from youtubesearchpython import Search
+
+from config import wordsapi_headers
 
 
 class Lookup(commands.Cog):
@@ -63,26 +64,54 @@ class Lookup(commands.Cog):
         await ctx.send(f"{res} {link}")
 
     @commands.command()
-    async def define(self, ctx, word: str):
+    async def define(self, ctx, word: str, idx: int = 1):
         """define a word?"""
+        idx -= 1
+        if idx < 0:
+            return await ctx.send("try a positive number :p")
         async with self.bot.session.get(
-            f"https://www.merriam-webster.com/dictionary/{word.lower()}"
+            f"https://wordsapiv1.p.rapidapi.com/words/{word}", headers=wordsapi_headers
         ) as r:
-            html = await r.text()
+            if r.status == 404:
+                return await ctx.send(f"{word} was not found :(")
+            result = await r.json()
+        if "results" not in result:
+            return await ctx.send(f"{word} was not found :(")
+        try:
+            syllables = " • ".join(result["syllables"]["list"])
+        except KeyError:
+            syllables = word
+        try:
+            definition = result["results"][idx]["definition"]
+        except KeyError:
+            definition = "no definition found :("
+        except IndexError:
+            return await ctx.send(f"Only {len(result['results'])} definitions available")
+        try:
+            example = result["results"][idx]["examples"][0]
+        except KeyError:
+            # no examples given
+            example = ""
 
-        html = BeautifulSoup(html, features="html.parser")
-        # find the definition text
-        with_tags = html.find_all("span", {"class": "dtText"})
-        if not with_tags:
-            return await ctx.send(
-                "this word was not found :(\nplease be precise in spelling"
+        await ctx.send(
+            """
+{0} | {4}
+
+"{1}" 
+
+{2}{3}""".format(
+                syllables,
+                definition,
+                "*" + example + "*\n\n" if example else "",
+                "Not what you were looking for? Try {0} 1-{1}".format(
+                    ctx.prefix + ctx.invoked_with + " " + word,
+                    len(result["results"]),
+                )
+                if len(result["results"]) > 1
+                else "",
+                result["results"][idx]["partOfSpeech"]
             )
-        definitions = [
-            BeautifulSoup(str(x), features="html.parser").get_text() for x in with_tags
-        ]
-        for d in definitions:
-            d.replace(":", "")
-        await ctx.send("\n---\n".join(definitions))
+        )
 
 
 def setup(bot):
