@@ -28,14 +28,18 @@ class Uncategorized(commands.Cog):
         if payload.user_id not in self.afk:
             return
         del self.afk[payload.user_id]
-        await self.bot.http.send_message(payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk")
+        await self.bot.http.send_message(
+            payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk"
+        )
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         if payload.user_id not in self.afk:
             return
         del self.afk[payload.user_id]
-        await self.bot.http.send_message(payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk")
+        await self.bot.http.send_message(
+            payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk"
+        )
 
     @commands.Cog.listener()
     async def on_typing(self, channel, user, _):
@@ -48,7 +52,9 @@ class Uncategorized(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """custom on_message for afk checks"""
-        if message.author.id in self.afk and not message.content.lower().startswith("ok afk"):
+        if message.author.id in self.afk and not message.content.lower().startswith(
+            "ok afk"
+        ):
             del self.afk[message.author.id]
             await message.channel.send("you are now no longer afk.")
 
@@ -64,7 +70,9 @@ class Uncategorized(commands.Cog):
                 else:
                     afk_msgs.append(f"{user} is set as afk: {reason}")
             resp_message = "\n\n".join(afk_msgs)
-            await message.channel.send(resp_message, allowed_mentions=discord.AllowedMentions.none())
+            await message.channel.send(
+                resp_message, allowed_mentions=discord.AllowedMentions.none()
+            )
 
     @commands.command(name="ascii", usage="<emoji or attached image>")
     async def make_ascii(self, ctx, emoji: discord.PartialEmoji = None):
