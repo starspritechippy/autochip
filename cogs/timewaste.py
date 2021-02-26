@@ -39,7 +39,7 @@ class LbTypeConverter(commands.Converter):
         except commands.MemberNotFound:
             where = arg.lower().strip()
             if where not in ["global", "personal"]:
-                raise commands.MemberNotFound
+                raise commands.MemberNotFound(arg)
         return where
 
 
