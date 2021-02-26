@@ -271,7 +271,77 @@ The user who contributed to this the most is **{time_best_who}**, who wasted **{
         record_embed = discord.Embed(
             title=f"{where} wastetime total"
             if isinstance(where, str)
-            else f"{where.name}'s wastetime record",
+            else f"{where.name}'s wastetime total",
+            description=desc,
+        )
+        await ctx.send(embed=record_embed)
+
+    @wastetime.command(aliases=["avg"])
+    async def average(self, ctx, where: LbTypeConverter = "global"):
+        """check the average amount of time wasted for a user, or overall"""
+        if isinstance(where, discord.Member):
+            result = await self.bot.db.fetchval(
+                """
+            SELECT AVG(time)
+            FROM timewastes
+            WHERE "user" = $1;
+            """,
+                where.id,
+            )
+
+            if not result:
+                return await ctx.send(f"{where.name} has not wasted any time yet.")
+
+            time = round(result, 2)
+            who = where.name
+            desc = f"**{who}** wastes **{time} seconds** on average per command."
+
+        else:
+            if where == "global":
+                global_avg = await self.bot.db.fetchval(
+                    'SELECT AVG(time) FROM timewastes;'
+                )
+                result = await self.bot.db.fetch(
+                    """
+                SELECT "user", AVG(time)
+                FROM timewastes
+                GROUP BY "user"
+                ORDER BY AVG(time) DESC;
+                """
+                )
+
+                if not result:
+                    return await ctx.send("Nobody has not wasted any time yet.")
+
+                time_total = round(global_avg, 2)
+                time_best = round(result[0]["avg"], 2)
+                time_best_who = (
+                        ctx.guild.get_member(result[0]["user"]) or "an unknown user"
+                )
+                desc = f"""On average, this community wastes **{time_total} seconds** per command.
+The user with the best average score is **{time_best_who}**, who wastes **{time_best} seconds** on average."""
+
+            else:
+                # personal total
+                result = await self.bot.db.fetchval(
+                    """
+                SELECT AVG(time)
+                FROM timewastes
+                WHERE "user" = $1
+                """,
+                    ctx.author.id,
+                )
+
+                if not result:
+                    return await ctx.send("You have not wasted any time yet.")
+
+                time = round(result, 2)
+                desc = f"On average, you waste **{time} seconds** each time."
+
+        record_embed = discord.Embed(
+            title=f"{where} wastetime average"
+            if isinstance(where, str)
+            else f"{where.name}'s wastetime average score",
             description=desc,
         )
         await ctx.send(embed=record_embed)
