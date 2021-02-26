@@ -71,7 +71,8 @@ class Uncategorized(commands.Cog):
                     afk_msgs.append(f"{user} is set as afk: {reason}")
             resp_message = "\n\n".join(afk_msgs)
             await message.channel.send(
-                resp_message, allowed_mentions=discord.AllowedMentions.none()
+                resp_message, allowed_mentions=discord.AllowedMentions.none(),
+                delete_after=len(afk_members)*3
             )
 
     @commands.command(name="ascii", usage="<emoji or attached image>")
