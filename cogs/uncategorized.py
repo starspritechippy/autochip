@@ -1,5 +1,7 @@
 import random
 from asyncio import sleep
+from collections import OrderedDict
+from pprint import pprint
 from typing import Optional
 
 import discord
@@ -29,7 +31,8 @@ class Uncategorized(commands.Cog):
             return
         del self.afk[payload.user_id]
         await self.bot.http.send_message(
-            payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk"
+            payload.channel_id,
+            f"<@{payload.user_id}>, you are no longer marked as afk",
         )
 
     @commands.Cog.listener()
@@ -38,7 +41,8 @@ class Uncategorized(commands.Cog):
             return
         del self.afk[payload.user_id]
         await self.bot.http.send_message(
-            payload.channel_id, f"<@{payload.user_id}>, you are no longer marked as afk"
+            payload.channel_id,
+            f"<@{payload.user_id}>, you are no longer marked as afk",
         )
 
     @commands.Cog.listener()
@@ -52,8 +56,9 @@ class Uncategorized(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """custom on_message for afk checks"""
-        if message.author.id in self.afk and not message.content.lower().startswith(
-            "ok afk"
+        if (
+            message.author.id in self.afk
+            and not message.content.lower().startswith("ok afk")
         ):
             del self.afk[message.author.id]
             await message.channel.send("you are now no longer afk.")
@@ -61,7 +66,9 @@ class Uncategorized(commands.Cog):
         if not message.mentions:
             return
         if any(x in self.afk for x in [u.id for u in message.mentions]):
-            afk_members = [user for user in message.mentions if user.id in self.afk]
+            afk_members = [
+                user for user in message.mentions if user.id in self.afk
+            ]
             afk_msgs = []
             for user in afk_members:
                 reason = self.afk[user.id]
@@ -71,8 +78,9 @@ class Uncategorized(commands.Cog):
                     afk_msgs.append(f"{user} is set as afk: {reason}")
             resp_message = "\n\n".join(afk_msgs)
             await message.channel.send(
-                resp_message, allowed_mentions=discord.AllowedMentions.none(),
-                delete_after=len(afk_members)*3
+                resp_message,
+                allowed_mentions=discord.AllowedMentions.none(),
+                delete_after=len(afk_members) * 3,
             )
 
     @commands.command(name="ascii", usage="<emoji or attached image>")
@@ -172,12 +180,13 @@ Blue: {int(b, base=16)}""",
     async def ping(self, ctx):
         """gives you the ping"""
         msg = await ctx.send(
-            "Here is your requested ping", file=discord.File(fp="assets/sonar_ping.mp3")
+            "Here is your requested ping",
+            file=discord.File(fp="assets/sonar_ping.mp3"),
         )
         await sleep(3)
         await msg.edit(
             content=msg.content
-            + "\n\nAnyhow my ping is {}ms".format(round(self.bot.latency * 1000, 1))
+            + " ({}ms)".format(round(self.bot.latency * 1000, 1))
         )
 
     @commands.command()
@@ -186,6 +195,107 @@ Blue: {int(b, base=16)}""",
         and if someone pings you theyre gonna know why"""
         self.afk[ctx.author.id] = reason
         await ctx.send("okay, I set you as AFK")
+
+    @commands.group(invoke_without_command=True)
+    async def epic(self, ctx, url: str):
+        """guess an epic guard image"""
+        async with ctx.typing():
+            async with self.bot.session.get(
+                "https://epic.chippy.wtf/?image={url}".format(url=url)
+            ) as res:
+                json = await res.json()
+
+            guesses = [
+                {
+                    "guess": json["guess"],
+                    "confidence": json["confidence"],
+                    "emoji": discord.utils.get(
+                        self.bot.get_guild(795267490124922880).emojis,
+                        name=json["guess"].replace(" ", "_"),
+                    ),
+                }
+            ]
+
+            for i in json["other guesses"]:
+                i.update(
+                    {
+                        "emoji": discord.utils.get(
+                            self.bot.get_guild(795267490124922880).emojis,
+                            name=i["guess"].replace(" ", "_"),
+                        )
+                    }
+                )
+
+            guesses.extend([i for i in json["other guesses"]])
+
+        formatted = "\n".join(
+            [
+                "{emoji} **{name}** - {conf}% likely".format(
+                    emoji=i["emoji"], name=i["guess"], conf=i["confidence"]
+                )
+                for i in guesses
+            ]
+        )
+
+        return await ctx.send(
+            "**Results for <{url}>:**\n\n{res}".format(url=url, res=formatted)
+        )
+
+    @epic.command()
+    async def ai(self, ctx, url: str):
+        """guess an epic guard image using ai"""
+        async with ctx.typing():
+            async with self.bot.session.get(
+                "https://epic.chippy.wtf/ai?image={url}".format(url=url)
+            ) as res:
+                json = await res.json()
+
+            guess = json["prediction"]
+            emote = discord.utils.get(
+                self.bot.get_guild(795267490124922880).emojis, name=guess
+            )
+
+        await ctx.send(f"This is a **{guess}** {emote}!")
+
+    @epic.command()
+    async def compare(self, ctx, url: str):
+        """compare what ai thinks compared to image overlay"""
+        async with ctx.typing():
+            async with self.bot.session.get(
+                "https://epic.chippy.wtf/?image={url}".format(url=url)
+            ) as res:
+                json = await res.json()
+            async with self.bot.session.get(
+                "https://epic.chippy.wtf/ai?image={url}".format(url=url)
+            ) as res:
+                json_ai = await res.json()
+
+        guess, ai_guess = json["guess"], json_ai["prediction"]
+        if guess == ai_guess:
+            emote = discord.utils.get(
+                self.bot.get_guild(795267490124922880).emojis,
+                name=guess.replace(" ", "_"),
+            )
+            return await ctx.send(
+                f"Both AI and image overlay agree that this is a {emote} **{guess}**!"
+            )
+
+        emote, emote_ai = discord.utils.get(
+            self.bot.get_guild(795267490124922880).emojis,
+            name=guess.replace(" ", "_"),
+        ), discord.utils.get(
+            self.bot.get_guild(795267490124922880).emojis,
+            name=ai_guess.replace(" ", "_"),
+        )
+        await ctx.send(
+            ":warning: while ai sees a {ai_emote} **{ai_guess}**, image overlay sees a {emote} **{guess}** ({conf}) :warning:".format(
+                emote=emote,
+                guess=guess,
+                ai_emote=emote_ai,
+                ai_guess=ai_guess,
+                conf=json["confidence"],
+            )
+        )
 
 
 def setup(bot):
