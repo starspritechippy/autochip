@@ -56,9 +56,8 @@ class Uncategorized(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """custom on_message for afk checks"""
-        if (
-            message.author.id in self.afk
-            and not message.content.lower().startswith("ok afk")
+        if message.author.id in self.afk and not message.content.lower().startswith(
+            "ok afk"
         ):
             del self.afk[message.author.id]
             await message.channel.send("you are now no longer afk.")
@@ -66,9 +65,7 @@ class Uncategorized(commands.Cog):
         if not message.mentions:
             return
         if any(x in self.afk for x in [u.id for u in message.mentions]):
-            afk_members = [
-                user for user in message.mentions if user.id in self.afk
-            ]
+            afk_members = [user for user in message.mentions if user.id in self.afk]
             afk_msgs = []
             for user in afk_members:
                 reason = self.afk[user.id]
@@ -185,8 +182,7 @@ Blue: {int(b, base=16)}""",
         )
         await sleep(3)
         await msg.edit(
-            content=msg.content
-            + " ({}ms)".format(round(self.bot.latency * 1000, 1))
+            content=msg.content + " ({}ms)".format(round(self.bot.latency * 1000, 1))
         )
 
     @commands.command()
@@ -296,6 +292,83 @@ Blue: {int(b, base=16)}""",
                 conf=json["confidence"],
             )
         )
+
+    @commands.command()
+    async def support(self, ctx):
+        """get to the "support server\""""
+        await ctx.send("discord.gg/vDyzrFw")
+
+    @commands.cooldown(1, 300, commands.BucketType.user)
+    @commands.group(invoke_without_command=True, aliases=["bug", "feature", "fr"])
+    async def feedback(self, ctx, *, text):
+        """Send some feedback to the dev
+        These could include feature requests, bug reports, or just some encouraging words :)"""
+        if len(text) > 500:
+            self.bot.get_command("feedback").reset_cooldown(ctx)
+            return await ctx.send(
+                "Please keep your feedback short (less than 500 characters)."
+            )
+
+        id = await self.bot.db.fetchval(
+            """INSERT INTO feedback (author, content, channel, message) VALUES ($1, $2, $3, $4) RETURNING id;""",
+            ctx.author.id,
+            text,
+            ctx.channel.id,
+            ctx.message.id,
+        )
+
+        try:
+            channel = self.bot.get_channel(
+                827983722234118164
+            ) or await self.bot.fetch_channel(827983722234118164)
+        except discord.NotFound:
+            return await ctx.send(
+                "Could not send feedback due to an internal error, please let Chip know directly"
+            )
+
+        feedback_embed = discord.Embed(
+            title="Feedback incoming!",
+            description=text,
+            color=discord.Color.blurple(),
+        ).set_author(
+            icon_url=str(ctx.author.avatar_url),
+            name=f"{ctx.author} | Feedback ID {id}",
+        )
+
+        await channel.send(embed=feedback_embed)
+        await ctx.send("Feedback received!")
+
+    @commands.is_owner()
+    @feedback.command(hidden=True)
+    async def reply(self, ctx, id: int, *, text):
+        """[owner only] reply to feedback"""
+        feedback = await self.bot.db.fetchrow(
+            """SELECT * FROM feedback WHERE id=$1;""", id
+        )
+        if not feedback:
+            return await ctx.send("That feedback ID doesn't exist.")
+
+        reply_embed = (
+            discord.Embed(
+                title="Your feedback got a response!",
+                color=discord.Color.blurple(),
+            )
+            .add_field(name="Original feedback", value=feedback["content"])
+            .add_field(name="Reply", value=text)
+        )
+
+        try:
+            user = await self.bot.fetch_user(feedback["author"])
+            await user.send(embed=reply_embed)
+        except (discord.Forbidden, discord.NotFound):
+            try:
+                channel = await self.bot.fetch_channel(feedback["channel"])
+                message = await channel.fetch_message(feedback["message"])
+                await message.reply(embed=reply_embed, mention_author=True)
+            except (discord.NotFound, discord.Forbidden):
+                return await ctx.send("Could not send the reply.")
+
+        await ctx.send("Reply has been sent!")
 
 
 def setup(bot):
