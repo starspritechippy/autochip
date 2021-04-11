@@ -2,6 +2,7 @@ import random
 
 from discord.ext import commands
 from googlesearch import search
+from duckpy import AsyncClient
 from youtubesearchpython import Search
 
 from config import wordsapi_headers
@@ -12,6 +13,31 @@ class Lookup(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.ddg = AsyncClient()
+
+    @commands.command(aliases=["ddg"])
+    async def duckduckgo(self, ctx, *, query: str):
+        """search something using duckduckgo, returns the first result"""
+        async with ctx.channel.typing():
+            res = random.choice(
+                [
+                    "let's try this",
+                    "give this one a try",
+                    "this might be a good starting point",
+                    "here u go",
+                    "here you go",
+                    "alright this one looks good",
+                    "let's see... try this one",
+                    "this might help",
+                    "hope this is what you were looking for",
+                    "i tried :)\n",
+                    "this is the only one i could find",
+                    "hope this is the right one",
+                ]
+            )
+            src = await self.ddg.search(query)
+            description, link = src[0]["description"], src[0]["url"]
+        await ctx.send(f"{res} {link}")
 
     @commands.command()
     async def google(self, ctx, *, query: str):
@@ -86,7 +112,9 @@ class Lookup(commands.Cog):
         except KeyError:
             definition = "no definition found :("
         except IndexError:
-            return await ctx.send(f"Only {len(result['results'])} definitions available")
+            return await ctx.send(
+                f"Only {len(result['results'])} definitions available"
+            )
         try:
             example = result["results"][idx]["examples"][0]
         except KeyError:
@@ -109,7 +137,7 @@ class Lookup(commands.Cog):
                 )
                 if len(result["results"]) > 1
                 else "",
-                result["results"][idx]["partOfSpeech"]
+                result["results"][idx]["partOfSpeech"],
             )
         )
 
