@@ -55,7 +55,7 @@ class TimeWaste(commands.Cog):
         isrecord = await self.bot.db.fetchval(
             """
             SELECT $1 > (
-              SELECT time 
+              SELECT time
               FROM timewastes
               WHERE "user"=$2
               ORDER BY time DESC
@@ -101,7 +101,7 @@ class TimeWaste(commands.Cog):
                 "You are already using this command, only one at a time per person."
             )
         self.wasting.append(ctx.author.id)
-        msg = await ctx.send("Started wasting time... <a:loading:810551507694649366>")
+        msg = await ctx.send("Started wasting time... <a:loading5:838072200762359818>")
         counter = 0
         out = gauss(0)
         rand = random.random()
@@ -299,7 +299,7 @@ The user who contributed to this the most is **{time_best_who}**, who wasted **{
         else:
             if where == "global":
                 global_avg = await self.bot.db.fetchval(
-                    'SELECT AVG(time) FROM timewastes;'
+                    "SELECT AVG(time) FROM timewastes;"
                 )
                 result = await self.bot.db.fetch(
                     """
@@ -316,7 +316,7 @@ The user who contributed to this the most is **{time_best_who}**, who wasted **{
                 time_total = round(global_avg, 2)
                 time_best = round(result[0]["avg"], 2)
                 time_best_who = (
-                        ctx.guild.get_member(result[0]["user"]) or "an unknown user"
+                    ctx.guild.get_member(result[0]["user"]) or "an unknown user"
                 )
                 desc = f"""On average, this community wastes **{time_total} seconds** per command.
 The user with the best average score is **{time_best_who}**, who wastes **{time_best} seconds** on average."""
