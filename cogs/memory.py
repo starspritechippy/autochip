@@ -49,6 +49,7 @@ class Memory(commands.Cog):
     async def forget(self, ctx):
         """forget the remembered text content
         also view commands remember and recall
+
         results are cached, meaning if the bot restarts, the remembered things are gone"""
         await self.bot.db.execute(
             """DELETE FROM memory WHERE "user"=$1;""", ctx.author.id

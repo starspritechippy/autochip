@@ -1,5 +1,6 @@
 import random
 from asyncio import sleep
+from datetime import date
 from typing import Optional
 
 import discord
@@ -366,6 +367,49 @@ Blue: {int(b, base=16)}""",
                 return await ctx.send("Could not send the reply.")
 
         await ctx.send("Reply has been sent!")
+
+    @commands.group(invoke_without_command=True)
+    async def lookup(self, ctx, user: int):
+        """Look up a user by their User ID"""
+        try:
+            user = await self.bot.fetch_user(user)
+        except discord.NotFound:
+            return await ctx.send(
+                "That user was not found... Make sure you copied the right ID"
+            )
+        embed = discord.Embed(color=discord.Color.blurple(), title=str(user))
+        embed.set_thumbnail(url=user.avatar_url)
+        embed.add_field(name="User ID", value=user.id, inline=False)
+
+        today = date.today()
+        age = (today - user.created_at.date()).days
+        creation_time = user.created_at.strftime("%m/%d/%Y at %H:%M")
+        embed.add_field(
+            name="Account created",
+            value=f"{creation_time} ({age} days)",
+            inline=False,
+        )
+
+        await ctx.send(embed=embed)
+
+    @lookup.command(aliases=["avy", "pfp"])
+    async def avatar(self, ctx, user: int):
+        """Get someone's user avatar specifically"""
+        try:
+            user: discord.User = await self.bot.fetch_user(user)
+        except discord.NotFound:
+            return await ctx.send(
+                "That user was not found... Make sure you copied the right ID"
+            )
+        url = (
+            user.avatar_url_as(format="gif")
+            if user.is_avatar_animated()
+            else user.avatar_url_as(format="png")
+        )
+        embed = discord.Embed(title=f"{user.name}'s avatar", url=str(url))
+        embed.set_image(url=url)
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
