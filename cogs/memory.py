@@ -18,7 +18,7 @@ class Memory(commands.Cog):
         if not content:
             return await ctx.invoke(self.bot.get_command("recall"))
         await self.bot.db.execute(
-            """INSERT INTO memory ("user", content) VALUES ($1, $2) 
+            """INSERT INTO memory ("user", content) VALUES ($1, $2)
             ON CONFLICT ("user") DO UPDATE
             SET content = $2;
             """,

@@ -1,5 +1,4 @@
 import random
-from asyncio import sleep
 from datetime import datetime, timedelta
 
 import discord
@@ -22,10 +21,10 @@ def custom_strftime(fmt, t):
     return t.strftime(fmt).replace("{S}", ordinal(t.day))
 
 
-def natural_join(l):
-    if len(l) == 1:
-        return l[0]
-    return ", ".join(l[0:-1]) + " and " + l[-1]
+def natural_join(items):
+    if len(items) == 1:
+        return items[0]
+    return ", ".join(items[0:-1]) + " and " + items[-1]
 
 
 class InvalidLbType(discord.DiscordException):

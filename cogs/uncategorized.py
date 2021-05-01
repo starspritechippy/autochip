@@ -1,11 +1,8 @@
 import random
 from asyncio import sleep
-from collections import OrderedDict
-from pprint import pprint
 from typing import Optional
 
 import discord
-import numpy
 from discord.ext import commands
 
 from utils.image import get_bytes, image_to_ascii

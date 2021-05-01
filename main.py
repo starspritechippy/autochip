@@ -9,7 +9,7 @@ import asyncpg
 import discord
 from discord.ext import commands
 
-from config import prefix, token, postgres_login
+from config import postgres_login, prefix, token
 
 fallback = os.urandom(32).hex()
 

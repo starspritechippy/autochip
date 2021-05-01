@@ -1,8 +1,8 @@
 import random
 
 from discord.ext import commands
-from googlesearch import search
 from duckpy import AsyncClient
+from googlesearch import search
 from youtubesearchpython import Search
 
 from config import wordsapi_headers
@@ -36,7 +36,7 @@ class Lookup(commands.Cog):
                 ]
             )
             src = await self.ddg.search(query)
-            description, link = src[0]["description"], src[0]["url"]
+            link = src[0]["url"]
         await ctx.send(f"{res} {link}")
 
     @commands.command()
@@ -125,7 +125,7 @@ class Lookup(commands.Cog):
             """
 {0} | {4}
 
-"{1}" 
+"{1}"
 
 {2}{3}""".format(
                 syllables,
