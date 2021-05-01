@@ -38,7 +38,7 @@ class CogMenu(menus.Menu):
         e = self.embed(self.description[0 : self.per_page])
         return await channel.send(embed=e)
 
-    @menus.button("<:leftarrow:818784296046690334>")
+    @menus.button("<:left:838107228468805643>")
     async def page_back(self, _):
         if self.page != 1:
             self.page -= 1
@@ -48,11 +48,11 @@ class CogMenu(menus.Menu):
             e = self.embed(items)
             await self.message.edit(embed=e)
 
-    @menus.button("<:stop:818784295606288405>")
+    @menus.button("<:stop:838107228610494544>")
     async def stop_menu(self, _):
         self.stop()
 
-    @menus.button("<:rightarrow:818784295891763201>")
+    @menus.button("<:right:838107228309028945>")
     async def page_forward(self, _):
         if len(self.description) >= (self.page * self.per_page):
             self.page += 1
