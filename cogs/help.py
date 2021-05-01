@@ -3,6 +3,8 @@ import math
 import discord
 from discord.ext import commands, menus
 
+from utils.paginator import Paginator
+
 
 class CogMenu(menus.Menu):
     def __init__(self, *args, **kwargs):
@@ -36,7 +38,7 @@ class CogMenu(menus.Menu):
         e = self.embed(self.description[0 : self.per_page])
         return await channel.send(embed=e)
 
-    @menus.button("\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f")
+    @menus.button("<:leftarrow:818784296046690334>")
     async def page_back(self, _):
         if self.page != 1:
             self.page -= 1
@@ -46,11 +48,11 @@ class CogMenu(menus.Menu):
             e = self.embed(items)
             await self.message.edit(embed=e)
 
-    @menus.button("\N{BLACK SQUARE FOR STOP}\ufe0f")
+    @menus.button("<:stop:818784295606288405>")
     async def stop_menu(self, _):
         self.stop()
 
-    @menus.button("\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f")
+    @menus.button("<:rightarrow:818784295891763201>")
     async def page_forward(self, _):
         if len(self.description) >= (self.page * self.per_page):
             self.page += 1
@@ -105,7 +107,7 @@ class SubcommandMenu(menus.Menu):
         e = self.embed(self.cmds[0 : self.per_page])
         return await channel.send(embed=e)
 
-    @menus.button("\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f")
+    @menus.button("<:leftarrow:818784296046690334>")
     async def page_back(self, _):
         if self.page != 1:
             self.page -= 1
@@ -115,11 +117,11 @@ class SubcommandMenu(menus.Menu):
             e = self.embed(items)
             await self.message.edit(embed=e)
 
-    @menus.button("\N{BLACK SQUARE FOR STOP}\ufe0f")
+    @menus.button("<:stop:818784295606288405>")
     async def stop_menu(self, _):
         self.stop()
 
-    @menus.button("\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f")
+    @menus.button("<:rightarrow:818784295891763201>")
     async def page_forward(self, _):
         if len(self.cmds) >= (self.page * self.per_page):
             self.page += 1
@@ -135,11 +137,64 @@ class HelpCommand(commands.HelpCommand):
 
     # overwrite send_bot_help(command_mapping[cog, command])
     # send the standard bot help with all commands and all cogs
-    async def send_bot_help(self, mapping):
-        return await self.context.send("there is no help")
+    # async def send_bot_help(self, mapping):
+    #     return await self.context.send("there is no help")
 
-    # overwrite send_cog_help(cog)
-    # send the help for a cog, commands can be accessed with cog.commands
+    async def send_bot_help(self, mapping):
+        embeds = []
+        first_embed = discord.Embed(
+            title="Autochip help", color=discord.Color.blurple()
+        )
+        for cog in mapping.keys():
+            if mapping[cog]:
+                first_embed.add_field(
+                    name=cog.qualified_name if cog else "No category",
+                    value=(cog.description if cog else "no description given")
+                    + "\n{} commands".format(len(mapping[cog])),
+                )
+
+        embeds.append(first_embed)
+
+        for i in mapping.keys():
+            name = (
+                "No Category" if not isinstance(i, commands.Cog) else i.qualified_name
+            )
+
+            embed = discord.Embed(
+                title=f"Autochip help - {name} cog",
+                color=discord.Color.blurple(),
+            )
+            if not mapping[i]:
+                continue
+            added = []
+            for j in mapping[i]:
+                # loops through every command in the cog, this includes subcommands
+
+                # 1. Check if the command is part of a group. If it is, target the root
+                if j.root_parent:
+                    j = j.root_parent
+
+                # 1.5 Don't add the command is it's already added
+                if j in added:
+                    continue
+
+                # 2. Make an embed field
+                embed.add_field(
+                    name=j.qualified_name
+                    + ("*" if isinstance(j, commands.Group) else ""),
+                    value=j.help or "No Description provided",
+                )
+
+                # 3. Add command to the added list so as to not add it again
+                added.append(j)
+
+            embed.set_footer(
+                text='Commands with "*" contain subcommands | Try `help command`'
+            )
+            embeds.append(embed)
+
+        await Paginator(embeds=embeds).paginate(self.context)
+
     async def send_cog_help(self, cog):
         menu = CogMenu(
             title=(
@@ -164,7 +219,7 @@ class HelpCommand(commands.HelpCommand):
                 f"{group.qualified_name} commands (from the {group.cog.qualified_name} cog)"
             ),
             bot=self.context.bot,
-            description=f"""{group.usage or group.signature}
+            description=f"""{self.clean_prefix}{group.qualified_name} {group.usage or group.signature}
 
 {group.help}""",
             cmds=list(group.commands),
@@ -177,7 +232,7 @@ class HelpCommand(commands.HelpCommand):
                 f"{command.qualified_name} (from the {command.cog.qualified_name} cog)"
             ),
             color=discord.Color.blurple(),
-            description=f"""{command.usage or command.signature}
+            description=f"""{self.clean_prefix}{command.qualified_name} {command.usage or command.signature}
 
 {command.help}""",
         )
@@ -186,12 +241,9 @@ class HelpCommand(commands.HelpCommand):
             e.add_field(name="aliases", value="{}".format(" • ".join(command.aliases)))
         await self.context.send(embed=e)
 
-    # overwrite command_callback(self, ctx, *, input)
-    # checks to see whether any given input is a cog, group, command, or invalid
-
 
 class Help(commands.Cog):
-    """h"""
+    """Help related"""
 
     def __init__(self, bot):
         self.bot = bot
